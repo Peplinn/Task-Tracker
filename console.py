@@ -2,7 +2,9 @@
 Doumentation
 """
 from datetime import datetime
-import json
+import json, re
+
+
 
 while True:
     with open("storage.json", "r+") as storage:
@@ -12,19 +14,26 @@ while True:
             stored_tasks = []
 
     first_display = True
-    await_user_input = "(task_man)$ "
+    await_raw_input = "(task_man)$ "
+    raw_input = input(await_raw_input)
 
-    user_input = input(await_user_input).split(" ")
+    pattern = r'(?:"([^"]*)"|(\S+))'
+    matches = re.findall(pattern, raw_input)
+
+    user_input = [match[0] if match[0] else match[1] for match in matches]
+
+    # user_input = re.split("\s",input(await_user_input))
+    # print(f"user input: {user_input}")
     first_display = False
 
     if user_input[0] == "exit":
-        if stored_tasks:
-            print(json.dumps(stored_tasks, indent=2))
+        # if stored_tasks:
+        #     print(json.dumps(stored_tasks, indent=2))
         print("Quitting console...")
         break
 
     if user_input[0] == "add" :
-        if len(user_input) < 2 :
+        if len(user_input) < 2 : # This is not airtight
             print("Syntax: add \"task_description\"")
             continue
 
@@ -44,6 +53,7 @@ while True:
 
         with open("storage.json", "w") as storage:
             json.dump(stored_tasks, storage, indent=2)
+            print(f"Task added successfully (ID: {task['id']})")
 
     
 
