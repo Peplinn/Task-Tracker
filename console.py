@@ -7,6 +7,8 @@ import json, re
 task_operations = ['add', 'update', 'list', 'delete',
                    'mark-in-progress', 'mark-done', 'exit']
 
+list_options = ['done', 'todo', 'in-progress']
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -52,8 +54,31 @@ while True:
         break
 
     if user_input[0] == "list":
-        print(json.dumps(stored_tasks, indent=2))
-        continue
+        tasks_to_list = []
+
+        if len(user_input) == 1:
+            print(json.dumps(stored_tasks, indent=2))
+            print(f"{bcolors.BOLD}{len(stored_tasks)} tasks listed{bcolors.ENDC}")
+            continue
+        else:
+            if user_input[1] not in list_options:
+                try:
+                    task_id = int(user_input[1]) - 1
+                except:
+                    print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
+                    continue
+
+                if task_id not in range(len(stored_tasks)):
+                    print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
+                    continue
+            else:
+                for task in stored_tasks:
+                    if task["status"] == user_input[1]:
+                        # print(f"Current Task: {task}")
+                        tasks_to_list.append(task)
+                print(json.dumps(tasks_to_list, indent=2))
+                print(f"{bcolors.BOLD}{len(tasks_to_list)} \"{user_input[1]}\" tasks listed{bcolors.ENDC}")
+                continue
 
     if user_input[0] == "add" :
         if len(user_input) < 2 : # This is not airtight
