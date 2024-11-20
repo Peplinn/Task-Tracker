@@ -178,7 +178,7 @@ while True:
 
         with open("storage.json", "w") as storage:
             json.dump(stored_tasks, storage, indent=2)
-            print(f"{bcolors.OKGREEN}\"{updated_task}\" set to \"\"{bcolors.ENDC}")
+            print(f"{bcolors.OKGREEN}\"{updated_task}\" set to \"done\"{bcolors.ENDC}")
 
     
 
