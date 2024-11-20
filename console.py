@@ -51,6 +51,10 @@ while True:
         print(f"{bcolors.BOLD}Quitting console...{bcolors.ENDC}")
         break
 
+    if user_input[0] == "list":
+        print(json.dumps(stored_tasks, indent=2))
+        continue
+
     if user_input[0] == "add" :
         if len(user_input) < 2 : # This is not airtight
             print(f"{bcolors.FAIL}Syntax: add \"task_description\"{bcolors.ENDC}")
