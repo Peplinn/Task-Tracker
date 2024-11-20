@@ -4,6 +4,9 @@ Doumentation
 from datetime import datetime
 import json, re
 
+task_operations = ['add', 'update', 'list', 'delete',
+                   'mark-in-progress', 'mark-done']
+
 
 
 while True:
@@ -13,22 +16,26 @@ while True:
         except:
             stored_tasks = []
 
-    first_display = True
+    print(stored_tasks[2])
+
+    first_display = True # Using this to display useful first-launch info
     await_raw_input = "(task_man)$ "
     raw_input = input(await_raw_input)
 
-    pattern = r'(?:"([^"]*)"|(\S+))'
-    matches = re.findall(pattern, raw_input)
+    if len(raw_input) > 0:
+        pattern = r'(?:"([^"]*)"|(\S+)|(\d+))'
+        matches = re.findall(pattern, raw_input)
 
-    user_input = [match[0] if match[0] else match[1] for match in matches]
+        user_input = [match[0] if match[0] else match[1] for match in matches]
+    else:
+        continue
 
-    # user_input = re.split("\s",input(await_user_input))
-    # print(f"user input: {user_input}")
     first_display = False
 
+    if user_input[0] not in task_operations:
+        print(f"Unknown command \'{user_input[0]}\'")
+
     if user_input[0] == "exit":
-        # if stored_tasks:
-        #     print(json.dumps(stored_tasks, indent=2))
         print("Quitting console...")
         break
 
@@ -36,6 +43,7 @@ while True:
         if len(user_input) < 2 : # This is not airtight
             print("Syntax: add \"task_description\"")
             continue
+        # elif 
 
         task = {
             "id": "",
@@ -47,13 +55,40 @@ while True:
 
         task["id"] = str(len(stored_tasks) + 1)
         task["description"] = user_input[1]
-        task["createdAt"] = str(datetime.now())
+        task["createdAt"] = str(datetime.now().strftime("%x, %H:%M"))
 
         stored_tasks.append(task)
 
         with open("storage.json", "w") as storage:
             json.dump(stored_tasks, storage, indent=2)
             print(f"Task added successfully (ID: {task['id']})")
+
+    if user_input[0] == "update" :
+        print(user_input)
+        if len(user_input) < 3 : # This is not airtight
+            print("Syntax: update \"task_id\" \"new_task_description\"")
+            continue
+
+        task_id = int(user_input[1]) - 1
+
+        stored_tasks[task_id]["description"] = user_input[2]
+        # task = {
+        #     "id": "",
+        #     "description": "",
+        #     "status": "",
+        #     "createdAt": "",
+        #     "updatedAt": "",
+        # }
+
+        # task["id"] = str(len(stored_tasks) + 1)
+        # task["description"] = user_input[1]
+        stored_tasks[task_id]["updatedAt"] = str(datetime.now().strftime("%x, %H:%M"))
+
+        # stored_tasks.append(task)
+
+        with open("storage.json", "w") as storage:
+            json.dump(stored_tasks, storage, indent=2)
+            print(f"Task updated successfully (ID: {task_id})")
 
     
 
