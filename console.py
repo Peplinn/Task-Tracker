@@ -70,6 +70,7 @@ while True:
 
         task["id"] = str(len(stored_tasks) + 1)
         task["description"] = user_input[1]
+        task["status"] = "todo"
         task["createdAt"] = str(datetime.now().strftime("%x, %H:%M"))
 
         stored_tasks.append(task)
@@ -116,6 +117,35 @@ while True:
         with open("storage.json", "w") as storage:
             json.dump(stored_tasks, storage, indent=2)
             print(f"{bcolors.OKGREEN}Task deleted successfully (ID: {task_id + 1}) - \"{deleted_task}\"{bcolors.ENDC}")
+
+
+    if user_input[0] == "mark-in-progress":
+        
+        print(user_input)
+
+        # if len(user_input) < 2 or not isinstance(int(user_input[1]), int): # This is not airtight
+        if len(user_input) < 2: # This is not airtight
+            print(f"{bcolors.FAIL}Syntax: mark-in-progress \"task_id\"{bcolors.ENDC}")
+            continue
+
+        try:
+            task_id = int(user_input[1]) - 1
+        except:
+            print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
+            continue
+
+        if task_id not in range(len(stored_tasks)):
+            print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
+            continue
+
+        updated_task = stored_tasks[task_id]["description"]
+        stored_tasks[task_id]["status"] = "in-progress"
+        stored_tasks[task_id]["updatedAt"] = str(datetime.now().strftime("%x, %H:%M"))
+
+
+        with open("storage.json", "w") as storage:
+            json.dump(stored_tasks, storage, indent=2)
+            print(f"{bcolors.OKGREEN}\"{updated_task}\" set to \"in-progress\"{bcolors.ENDC}")
 
     
 
