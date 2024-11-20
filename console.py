@@ -7,8 +7,18 @@ import json, re
 task_operations = ['add', 'update', 'list', 'delete',
                    'mark-in-progress', 'mark-done', 'exit']
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
-
+first_display = True # Using this to display useful first-launch info
 while True:
     with open("storage.json", "r+") as storage:
         try:
@@ -18,9 +28,8 @@ while True:
 
     print(stored_tasks[-1])
 
-    first_display = True # Using this to display useful first-launch info
     if first_display == True:
-        print("Welcome to Task Man CLI")
+        print(f"{bcolors.OKCYAN}{bcolors.BOLD}Welcome to Task Man CLI{bcolors.ENDC}")
         first_display = False
 
     await_raw_input = "(task_man)$ "
@@ -35,16 +44,16 @@ while True:
         continue
 
     if user_input[0] not in task_operations:
-        print(f"Unknown command \'{user_input[0]}\'")
+        print(f"{bcolors.FAIL}Unknown command \'{user_input[0]}\'{bcolors.ENDC}")
         continue
 
     if user_input[0] == "exit":
-        print("Quitting console...")
+        print(f"{bcolors.BOLD}Quitting console...{bcolors.ENDC}")
         break
 
     if user_input[0] == "add" :
         if len(user_input) < 2 : # This is not airtight
-            print("Syntax: add \"task_description\"")
+            print(f"{bcolors.FAIL}Syntax: add \"task_description\"{bcolors.ENDC}")
             continue
 
         task = {
@@ -63,12 +72,12 @@ while True:
 
         with open("storage.json", "w") as storage:
             json.dump(stored_tasks, storage, indent=2)
-            print(f"Task added successfully (ID: {task['id']})")
+            print(f"{bcolors.OKGREEN}Task added successfully (ID: {task['id']}){bcolors.ENDC}")
 
     if user_input[0] == "update" :
         print(user_input)
         if len(user_input) < 3 : # This is not airtight
-            print("Syntax: update \"task_id\" \"new_task_description\"")
+            print(f"{bcolors.FAIL}Syntax: update \"task_id\" \"new_task_description\"{bcolors.ENDC}")
             continue
 
         task_id = int(user_input[1]) - 1
@@ -79,7 +88,7 @@ while True:
 
         with open("storage.json", "w") as storage:
             json.dump(stored_tasks, storage, indent=2)
-            print(f"Task updated successfully (ID: {task_id + 1})")
+            print(f"{bcolors.OKGREEN}Task updated successfully (ID: {task_id + 1}){bcolors.ENDC}")
 
     if user_input[0] == "delete" :
         print(user_input)
@@ -87,22 +96,22 @@ while True:
         try:
             task_id = int(user_input[1]) - 1
         except:
-            print("Invalid Task ID")
+            print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
             continue
 
         if len(user_input) < 2 or not isinstance(int(user_input[1]), int): # This is not airtight
-            print("Syntax: delete \"task_id\"")
+            print(f"{bcolors.FAIL}Syntax: delete \"task_id\"{bcolors.ENDC}")
             continue
 
         if task_id not in range(len(stored_tasks)):
-            print("Task ID out of range")
+            print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
             continue
 
         deleted_task = stored_tasks.pop(task_id)["description"]
 
         with open("storage.json", "w") as storage:
             json.dump(stored_tasks, storage, indent=2)
-            print(f"Task deleted successfully (ID: {task_id + 1}) - \"{deleted_task}\"")
+            print(f"{bcolors.OKGREEN}Task deleted successfully (ID: {task_id + 1}) - \"{deleted_task}\"{bcolors.ENDC}")
 
     
 
