@@ -16,7 +16,7 @@ while True:
         except:
             stored_tasks = []
 
-    print(stored_tasks[2])
+    print(stored_tasks[-1])
 
     first_display = True # Using this to display useful first-launch info
     await_raw_input = "(task_man)$ "
@@ -89,6 +89,31 @@ while True:
         with open("storage.json", "w") as storage:
             json.dump(stored_tasks, storage, indent=2)
             print(f"Task updated successfully (ID: {task_id})")
+
+    if user_input[0] == "delete" :
+        print(user_input)
+
+        try:
+            task_id = int(user_input[1]) - 1
+        except:
+            print("Invalid Task ID")
+            continue
+
+        if len(user_input) < 2 or not isinstance(int(user_input[1]), int): # This is not airtight
+            print("Syntax: delete \"task_id\"")
+            continue
+
+        # task_id = int(user_input[1]) - 1
+
+        try:
+            deleted_task = stored_tasks.pop(task_id)["description"]
+        except:
+            print("Delete Unsuccessful")
+            continue
+
+        with open("storage.json", "w") as storage:
+            json.dump(stored_tasks, storage, indent=2)
+            print(f"Task deleted successfully (ID: {task_id}) \"{deleted_task}\"")
 
     
 
