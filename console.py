@@ -85,7 +85,15 @@ while True:
             print(f"{bcolors.FAIL}Syntax: update \"task_id\" \"new_task_description\"{bcolors.ENDC}")
             continue
 
-        task_id = int(user_input[1]) - 1
+        try:
+            task_id = int(user_input[1]) - 1
+        except:
+            print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
+            continue
+
+        if task_id not in range(len(stored_tasks)):
+            print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
+            continue
 
         stored_tasks[task_id]["description"] = user_input[2]
 
@@ -98,14 +106,15 @@ while True:
     if user_input[0] == "delete" :
         print(user_input)
 
+        # if len(user_input) < 2 or not isinstance(int(user_input[1]), int): # This is not airtight
+        if len(user_input) < 2: # This is not airtight
+            print(f"{bcolors.FAIL}Syntax: delete \"task_id\"{bcolors.ENDC}")
+            continue
+
         try:
             task_id = int(user_input[1]) - 1
         except:
             print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
-            continue
-
-        if len(user_input) < 2 or not isinstance(int(user_input[1]), int): # This is not airtight
-            print(f"{bcolors.FAIL}Syntax: delete \"task_id\"{bcolors.ENDC}")
             continue
 
         if task_id not in range(len(stored_tasks)):
@@ -122,8 +131,6 @@ while True:
     if user_input[0] == "mark-in-progress":
         
         print(user_input)
-
-        # if len(user_input) < 2 or not isinstance(int(user_input[1]), int): # This is not airtight
         if len(user_input) < 2: # This is not airtight
             print(f"{bcolors.FAIL}Syntax: mark-in-progress \"task_id\"{bcolors.ENDC}")
             continue
@@ -146,6 +153,32 @@ while True:
         with open("storage.json", "w") as storage:
             json.dump(stored_tasks, storage, indent=2)
             print(f"{bcolors.OKGREEN}\"{updated_task}\" set to \"in-progress\"{bcolors.ENDC}")
+
+    if user_input[0] == "mark-done":
+        
+        print(user_input)
+        if len(user_input) < 2: # This is not airtight
+            print(f"{bcolors.FAIL}Syntax: mark-done \"task_id\"{bcolors.ENDC}")
+            continue
+
+        try:
+            task_id = int(user_input[1]) - 1
+        except:
+            print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
+            continue
+
+        if task_id not in range(len(stored_tasks)):
+            print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
+            continue
+
+        updated_task = stored_tasks[task_id]["description"]
+        stored_tasks[task_id]["status"] = "done"
+        stored_tasks[task_id]["updatedAt"] = str(datetime.now().strftime("%x, %H:%M"))
+
+
+        with open("storage.json", "w") as storage:
+            json.dump(stored_tasks, storage, indent=2)
+            print(f"{bcolors.OKGREEN}\"{updated_task}\" set to \"\"{bcolors.ENDC}")
 
     
 
