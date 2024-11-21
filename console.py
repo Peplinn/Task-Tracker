@@ -1,13 +1,15 @@
 """
-Doumentation
+Documentation
 """
 from datetime import datetime
-import json, re
+import json
+import re
 
 task_operations = ['add', 'update', 'list', 'delete',
                    'mark-in-progress', 'mark-done', 'exit']
 
 list_options = ['done', 'todo', 'in-progress']
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -20,72 +22,93 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-first_display = True # Using this to display useful first-launch info
-while True:
-    with open("storage.json", "r+") as storage:
-        try:
-            stored_tasks = json.load(storage)
-        except:
-            stored_tasks = []
 
-    print(stored_tasks[-1])
+class TaskManager():
+    """
+    """
+    def __init__(self):
+        self.stored_tasks = self.load_storage()
+        pass
 
-    if first_display == True:
-        print(f"{bcolors.OKCYAN}{bcolors.BOLD}Welcome to Task Man CLI{bcolors.ENDC}")
-        print(f"{bcolors.OKCYAN}Type \'help\' to view all commands.\
-              \nType \'help <command_name>\' to see usage.{bcolors.ENDC}")
-        first_display = False
+    def load_storage(self):
+        with open("storage.json", "r+") as storage:
+            try:
+                self.stored_tasks = json.load(storage)
+            except:
+                self.stored_tasks = []
 
-    await_raw_input = "(task_man)$ "
-    raw_input = input(await_raw_input)
+    def save_storage(self, mode, task=None, new_status=None):
+        with open("storage.json", "w") as storage:
+            json.dump(self.stored_tasks, storage, indent=2)
+            if mode == "add":
+                print(f"{bcolors.OKGREEN}\
+                      Task added successfully (ID: {task['id']})\
+                        {bcolors.ENDC}")
+            elif mode == "update":
+                print(f"{bcolors.OKGREEN}\
+                      Task updated successfully (ID: {task['id']})\
+                        {bcolors.ENDC}")
+            elif mode == "delete":
+                print(f"{bcolors.OKGREEN}Task deleted successfully \
+                      (ID: {task['id']})\
+                          - \"{task['description']}\"\
+                            {bcolors.ENDC}")
+            elif mode == "status":
+                print(f"{bcolors.OKGREEN}\"\
+                      {task['description']}\" set to \"{new_status}\"\
+                        {bcolors.ENDC}")
 
-    if len(raw_input) > 0:
-        pattern = r'(?:"([^"]*)"|(\S+)|(\d+))'
-        matches = re.findall(pattern, raw_input)
+    def init_console(self):
+        await_raw_input = "(task_man)$ "
+        raw_input = input(await_raw_input)
+        self.parse_input(raw_input)
 
-        user_input = [match[0] if match[0] else match[1] for match in matches]
-    else:
-        continue
+    def parse_input(self, raw_input):
+        task_operations = {
+            'add': self.add_task,
+            'update': self.update_task,
+            'list': self.list_task,
+            'delete': self.delete_task,
+            'mark-in-progress': self.change_status,
+            'mark-done': self.change_status,
+            'exit': self.exit
+        }
 
-    if user_input[0] not in task_operations:
-        print(f"{bcolors.FAIL}Unknown command \'{user_input[0]}\'{bcolors.ENDC}")
-        continue
+        if len(raw_input) > 0:
+            pattern = r'(?:"([^"]*)"|(\S+)|(\d+))'
+            matches = re.findall(pattern, raw_input)
 
-    if user_input[0] == "exit":
-        print(f"{bcolors.BOLD}Quitting console...{bcolors.ENDC}")
-        break
-
-    if user_input[0] == "list":
-        tasks_to_list = []
-
-        if len(user_input) == 1:
-            print(json.dumps(stored_tasks, indent=2))
-            print(f"{bcolors.BOLD}{len(stored_tasks)} tasks listed{bcolors.ENDC}")
-            continue
-        else:
-            if user_input[1] not in list_options:
-                try:
-                    task_id = int(user_input[1]) - 1
-                except:
-                    print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
-                    continue
-
-                if task_id not in range(len(stored_tasks)):
-                    print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
-                    continue
+            user_input = [match[0] if match[0]
+                          else match[1] for match in matches]
+            if user_input[0] not in task_operations:
+                print(f"{bcolors.FAIL}\
+                      Unknown command \'{user_input[0]}\'\
+                        {bcolors.ENDC}")
             else:
-                for task in stored_tasks:
-                    if task["status"] == user_input[1]:
-                        # print(f"Current Task: {task}")
-                        tasks_to_list.append(task)
-                print(json.dumps(tasks_to_list, indent=2))
-                print(f"{bcolors.BOLD}{len(tasks_to_list)} \"{user_input[1]}\" tasks listed{bcolors.ENDC}")
-                continue
+                task = TaskManager()
+                return task_operations[user_input[0]](user_input)
+        else:
+            pass
 
-    if user_input[0] == "add" :
-        if len(user_input) < 2 : # This is not airtight
-            print(f"{bcolors.FAIL}Syntax: add \"task_description\"{bcolors.ENDC}")
-            continue
+    def console_loop(self):
+        first_display = True
+        self.load_storage()
+
+        print(f"{bcolors.OKCYAN}\
+              {bcolors.BOLD}Welcome to Task Man CLI\
+                {bcolors.ENDC}")
+        print(f"{bcolors.OKCYAN}Type \'help\' to view all commands.\
+            \nType \'help <command_name>\' to see usage.{bcolors.ENDC}")
+
+        while True:
+            self.init_console()
+
+    def add_task(self, input):
+        if len(input) < 2:  # This is not airtight
+            print(f"{bcolors.FAIL}\
+                  Syntax: add \"task_description\"\
+                  {bcolors.ENDC}")
+            return
 
         task = {
             "id": "",
@@ -95,119 +118,132 @@ while True:
             "updatedAt": "",
         }
 
-        task["id"] = str(len(stored_tasks) + 1)
-        task["description"] = user_input[1]
+        task["id"] = str(len(self.stored_tasks) + 1)
+        task["description"] = input[1]
         task["status"] = "todo"
         task["createdAt"] = str(datetime.now().strftime("%x, %H:%M"))
+        task["updatedAt"] = None
 
-        stored_tasks.append(task)
+        self.stored_tasks.append(task)
 
-        with open("storage.json", "w") as storage:
-            json.dump(stored_tasks, storage, indent=2)
-            print(f"{bcolors.OKGREEN}Task added successfully (ID: {task['id']}){bcolors.ENDC}")
+        self.save_storage("add", task)
 
-    if user_input[0] == "update" :
-        print(user_input)
-        if len(user_input) < 3 : # This is not airtight
-            print(f"{bcolors.FAIL}Syntax: update \"task_id\" \"new_task_description\"{bcolors.ENDC}")
-            continue
+    def update_task(self, input):
+        print(input)
+        if len(input) < 3:  # This is not airtight
+            print(f"{bcolors.FAIL}\
+                  Syntax: update \"task_id\" \"new_task_description\"\
+                  {bcolors.ENDC}")
+            return
 
         try:
-            task_id = int(user_input[1]) - 1
+            task_id = int(input[1]) - 1
         except:
             print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
-            continue
+            return
 
-        if task_id not in range(len(stored_tasks)):
+        if task_id not in range(len(self.stored_tasks)):
             print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
-            continue
+            return
 
-        stored_tasks[task_id]["description"] = user_input[2]
+        self.stored_tasks[task_id]["description"] = input[2]
 
-        stored_tasks[task_id]["updatedAt"] = str(datetime.now().strftime("%x, %H:%M"))
+        self.stored_tasks[task_id]["updatedAt"] \
+            = str(datetime.now().strftime("%x, %H:%M"))
+        self.save_storage("update", self.stored_tasks[task_id])
 
-        with open("storage.json", "w") as storage:
-            json.dump(stored_tasks, storage, indent=2)
-            print(f"{bcolors.OKGREEN}Task updated successfully (ID: {task_id + 1}){bcolors.ENDC}")
-
-    if user_input[0] == "delete" :
-        print(user_input)
-
-        # if len(user_input) < 2 or not isinstance(int(user_input[1]), int): # This is not airtight
-        if len(user_input) < 2: # This is not airtight
+    def delete_task(self, input):
+        if len(input) < 2:  # This is not airtight
             print(f"{bcolors.FAIL}Syntax: delete \"task_id\"{bcolors.ENDC}")
-            continue
+            return
 
         try:
-            task_id = int(user_input[1]) - 1
+            task_id = int(input[1]) - 1
         except:
             print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
-            continue
+            return
 
-        if task_id not in range(len(stored_tasks)):
+        if task_id not in range(len(self.stored_tasks)):
             print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
-            continue
+            return
 
-        deleted_task = stored_tasks.pop(task_id)["description"]
+        deleted_task = self.stored_tasks.pop(task_id)["description"]
+        self.save_storage("delete", self.stored_tasks[task_id])
 
-        with open("storage.json", "w") as storage:
-            json.dump(stored_tasks, storage, indent=2)
-            print(f"{bcolors.OKGREEN}Task deleted successfully (ID: {task_id + 1}) - \"{deleted_task}\"{bcolors.ENDC}")
-
-
-    if user_input[0] == "mark-in-progress":
-        
-        print(user_input)
-        if len(user_input) < 2: # This is not airtight
-            print(f"{bcolors.FAIL}Syntax: mark-in-progress \"task_id\"{bcolors.ENDC}")
-            continue
+    def change_status(self, input):
+        if len(input) < 2:  # This is not airtight
+            print(f"{bcolors.FAIL}Syntax: mark-in-progress or\
+                   mark-done \"task_id\"{bcolors.ENDC}")
+            return
 
         try:
-            task_id = int(user_input[1]) - 1
+            task_id = int(input[1]) - 1
         except:
             print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
-            continue
+            return
 
-        if task_id not in range(len(stored_tasks)):
+        if task_id not in range(len(self.stored_tasks)):
             print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
-            continue
+            return
 
-        updated_task = stored_tasks[task_id]["description"]
-        stored_tasks[task_id]["status"] = "in-progress"
-        stored_tasks[task_id]["updatedAt"] = str(datetime.now().strftime("%x, %H:%M"))
+        if input[0] == "mark-in-progress":
+            self.stored_tasks[task_id]["status"] = "in-progress"
+            new_status = "in-progress"
+        elif input[0] == "mark-done":
+            self.stored_tasks[task_id]["status"] = "done"
+            new_status = "done"
+        elif input[0] == "mark-todo":
+            self.stored_tasks[task_id]["status"] = "todo"
+            new_status = "todo"
+        self.stored_tasks[task_id]["updatedAt"] \
+            = str(datetime.now().strftime("%x, %H:%M"))
+
+        self.save_storage("status", self.stored_tasks[task_id], new_status)
+
+    def list_task(self, input):
+        tasks_to_list = []
+
+        if len(input) == 1:
+            print(json.dumps(self.stored_tasks, indent=2))
+            print(f"{bcolors.BOLD}\
+                  {len(self.stored_tasks)} tasks listed\
+                    {bcolors.ENDC}")
+            return
+        else:
+            if input[1] not in list_options:
+                try:
+                    task_id = int(input[1]) - 1
+                except:
+                    print(f"{bcolors.FAIL}\
+                          Invalid Task ID\
+                          {bcolors.ENDC}")
+                    return
+
+                if task_id not in range(len(self.stored_tasks)):
+                    print(f"{bcolors.FAIL}\
+                          Task ID out of range\
+                          {bcolors.ENDC}")
+                    return
+                else:
+                    tasks_to_list.append(self.stored_tasks[task_id])
+                    print(json.dumps(tasks_to_list, indent=2))
+                    print(f"{bcolors.BOLD}\
+                          Task No.: {task_id + 1} listed\
+                            {bcolors.ENDC}")
+            else:
+                for task in self.stored_tasks:
+                    if task["status"] == input[1]:
+                        tasks_to_list.append(task)
+                print(json.dumps(tasks_to_list, indent=2))
+                print(f"{bcolors.BOLD}\
+                      {len(tasks_to_list)} \"{input[1]}\" tasks listed\
+                        {bcolors.ENDC}")
+                return
+
+    def exit(self, input=None):
+        print(f"{bcolors.BOLD}Quitting console...{bcolors.ENDC}")
+        raise SystemExit
 
 
-        with open("storage.json", "w") as storage:
-            json.dump(stored_tasks, storage, indent=2)
-            print(f"{bcolors.OKGREEN}\"{updated_task}\" set to \"in-progress\"{bcolors.ENDC}")
-
-    if user_input[0] == "mark-done":
-        
-        print(user_input)
-        if len(user_input) < 2: # This is not airtight
-            print(f"{bcolors.FAIL}Syntax: mark-done \"task_id\"{bcolors.ENDC}")
-            continue
-
-        try:
-            task_id = int(user_input[1]) - 1
-        except:
-            print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
-            continue
-
-        if task_id not in range(len(stored_tasks)):
-            print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
-            continue
-
-        updated_task = stored_tasks[task_id]["description"]
-        stored_tasks[task_id]["status"] = "done"
-        stored_tasks[task_id]["updatedAt"] = str(datetime.now().strftime("%x, %H:%M"))
-
-
-        with open("storage.json", "w") as storage:
-            json.dump(stored_tasks, storage, indent=2)
-            print(f"{bcolors.OKGREEN}\"{updated_task}\" set to \"done\"{bcolors.ENDC}")
-
-    
-
-
-
+if __name__ == "__main__":
+    TaskManager().console_loop()
