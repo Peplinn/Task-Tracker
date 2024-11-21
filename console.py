@@ -32,6 +32,8 @@ while True:
 
     if first_display == True:
         print(f"{bcolors.OKCYAN}{bcolors.BOLD}Welcome to Task Man CLI{bcolors.ENDC}")
+        print(f"{bcolors.OKCYAN}Type \'help\' to view all commands.\
+              \nType \'help <command_name>\' to see usage.{bcolors.ENDC}")
         first_display = False
 
     await_raw_input = "(task_man)$ "
