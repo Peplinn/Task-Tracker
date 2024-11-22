@@ -93,15 +93,17 @@ class TaskManager():
     def console_loop(self):
         first_display = True
         self.load_storage()
-
-        print(f"{bcolors.OKCYAN}\
-              {bcolors.BOLD}Welcome to Task Man CLI\
+        print(f"{bcolors.OKCYAN}{bcolors.BOLD}Welcome to Task Man CLI\
                 {bcolors.ENDC}")
         print(f"{bcolors.OKCYAN}Type \'help\' to view all commands.\
             \nType \'help <command_name>\' to see usage.{bcolors.ENDC}")
 
         while True:
-            self.init_console()
+            try:
+                self.init_console()
+            except KeyboardInterrupt:
+                print("Quitting Console...")
+                break
 
     def add_task(self, input):
         if len(input) < 2:  # This is not airtight
