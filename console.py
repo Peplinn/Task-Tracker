@@ -50,8 +50,8 @@ class TaskManager():
                         {bcolors.ENDC}")
             elif mode == "delete":
                 print(f"{bcolors.OKGREEN}Task deleted successfully \
-                      (ID: {task['id']})\
-                          - \"{task['description']}\"\
+                      (ID: {task['id']}) -\
+                        \"{task['description']}\"\
                             {bcolors.ENDC}")
             elif mode == "status":
                 print(f"{bcolors.OKGREEN}\"\
@@ -102,7 +102,7 @@ class TaskManager():
             try:
                 self.init_console()
             except KeyboardInterrupt:
-                print("Quitting Console...")
+                print(f"{bcolors.BOLD}Quitting console...{bcolors.ENDC}")
                 break
 
     def add_task(self, input):
@@ -120,7 +120,7 @@ class TaskManager():
             "updatedAt": "",
         }
 
-        task["id"] = str(len(self.stored_tasks) + 1)
+        task["id"] = int(self.stored_tasks[-1]['id']) + 1
         task["description"] = input[1]
         task["status"] = "todo"
         task["createdAt"] = str(datetime.now().strftime("%x, %H:%M"))
@@ -131,46 +131,84 @@ class TaskManager():
         self.save_storage("add", task)
 
     def update_task(self, input):
-        print(input)
+        # print(input)
         if len(input) < 3:  # This is not airtight
             print(f"{bcolors.FAIL}\
                   Syntax: update \"task_id\" \"new_task_description\"\
                   {bcolors.ENDC}")
             return
 
+        """
+        WE ARE REPLACING THE PREVIOUS IMPLEMENTATION
+        IN CASE THE STORAGE GETS TAMPERED WITH MANUALLY
+        I.E. ALTERATIONS DO NOT HAPPEN VIA CONSOLE.
+        """
+        # GRAB THE TASK_ID TO BE UPDATED
         try:
-            task_id = int(input[1]) - 1
+            task_id = int(input[1])
         except:
             print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
             return
 
-        if task_id not in range(len(self.stored_tasks)):
-            print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
+        task_id_present = False
+
+        # FIND THE INDEX OF THE TASK TO BE UPDATED
+        for task in self.stored_tasks:
+            if task_id == int(task['id']):
+                print(f"task number: {task['id']}")
+                task_id_present = True
+                position = self.stored_tasks.index(task)
+                print(f"The position is {position}")
+        if not task_id_present:
+            print(f"Task ID: {task_id} not found")
             return
 
-        self.stored_tasks[task_id]["description"] = input[2]
+        # UPDATE THE TASK BY ITS INDEX
+        self.stored_tasks[position]["description"] = input[2]
 
-        self.stored_tasks[task_id]["updatedAt"] \
+        self.stored_tasks[position]["updatedAt"] \
             = str(datetime.now().strftime("%x, %H:%M"))
-        self.save_storage("update", self.stored_tasks[task_id])
+        self.save_storage("update", self.stored_tasks[position])
 
     def delete_task(self, input):
         if len(input) < 2:  # This is not airtight
             print(f"{bcolors.FAIL}Syntax: delete \"task_id\"{bcolors.ENDC}")
             return
 
+        # GRAB THE TASK_ID TO BE DELETED
         try:
-            task_id = int(input[1]) - 1
+            task_id = int(input[1])
         except:
             print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
             return
 
-        if task_id not in range(len(self.stored_tasks)):
-            print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
+        task_id_present = False
+
+        # FIND THE INDEX OF THE TASK TO BE DELETED
+        for task in self.stored_tasks:
+            if task_id == int(task['id']):
+                print(f"task number: {task['id']}")
+                task_id_present = True
+                position = self.stored_tasks.index(task)
+                print(f"The position is {position}")
+        if not task_id_present:
+            print(f"Task ID: {task_id} not found")
             return
 
-        deleted_task = self.stored_tasks.pop(task_id)["description"]
-        self.save_storage("delete", self.stored_tasks[task_id])
+        # DELETE THE TASK BY ITS INDEX
+        try:
+            deleted_task = self.stored_tasks.pop(position)
+        except:
+            print("Delete Unsuccessful")
+            return
+
+        # UDPATED THE INDEXES OF ALL TASKS
+        i = 0
+        while i < len(self.stored_tasks):
+            self.stored_tasks[i]['id'] = i + 1
+            i += 1
+
+        self.save_storage("delete", deleted_task)
 
     def change_status(self, input):
         if len(input) < 2:  # This is not airtight
@@ -178,29 +216,40 @@ class TaskManager():
                    mark-done \"task_id\"{bcolors.ENDC}")
             return
 
+        # GRAB THE TASK_ID OF TASK TO STATUS CHANGE
         try:
-            task_id = int(input[1]) - 1
+            task_id = int(input[1])
         except:
             print(f"{bcolors.FAIL}Invalid Task ID{bcolors.ENDC}")
             return
 
-        if task_id not in range(len(self.stored_tasks)):
-            print(f"{bcolors.FAIL}Task ID out of range{bcolors.ENDC}")
+        task_id_present = False
+
+        # FIND THE INDEX OF THE TASK TO STATUS CHANGE
+        for task in self.stored_tasks:
+            if task_id == int(task['id']):
+                print(f"task number: {task['id']}")
+                task_id_present = True
+                position = self.stored_tasks.index(task)
+                print(f"The position is {position}")
+        if not task_id_present:
+            print(f"Task ID: {task_id} not found")
             return
 
+        # UPDATE THE STATUS BY TASK INDEX
         if input[0] == "mark-in-progress":
-            self.stored_tasks[task_id]["status"] = "in-progress"
+            self.stored_tasks[position]["status"] = "in-progress"
             new_status = "in-progress"
         elif input[0] == "mark-done":
-            self.stored_tasks[task_id]["status"] = "done"
+            self.stored_tasks[position]["status"] = "done"
             new_status = "done"
         elif input[0] == "mark-todo":
-            self.stored_tasks[task_id]["status"] = "todo"
+            self.stored_tasks[position]["status"] = "todo"
             new_status = "todo"
-        self.stored_tasks[task_id]["updatedAt"] \
+        self.stored_tasks[position]["updatedAt"] \
             = str(datetime.now().strftime("%x, %H:%M"))
 
-        self.save_storage("status", self.stored_tasks[task_id], new_status)
+        self.save_storage("status", self.stored_tasks[position], new_status)
 
     def list_task(self, input):
         tasks_to_list = []
@@ -213,25 +262,34 @@ class TaskManager():
             return
         else:
             if input[1] not in list_options:
+                # GRAB THE TASK_ID TO BE LISTED
                 try:
-                    task_id = int(input[1]) - 1
+                    task_id = int(input[1])
                 except:
                     print(f"{bcolors.FAIL}\
                           Invalid Task ID\
                           {bcolors.ENDC}")
                     return
 
-                if task_id not in range(len(self.stored_tasks)):
-                    print(f"{bcolors.FAIL}\
-                          Task ID out of range\
-                          {bcolors.ENDC}")
+                task_id_present = False
+
+                # FIND THE INDEX OF THE TASK TO BE DELETED
+                for task in self.stored_tasks:
+                    if task_id == int(task['id']):
+                        print(f"task number: {task['id']}")
+                        task_id_present = True
+                        position = self.stored_tasks.index(task)
+                        print(f"The position is {position}")
+                if not task_id_present:
+                    print(f"Task ID: {task_id} not found")
                     return
-                else:
-                    tasks_to_list.append(self.stored_tasks[task_id])
-                    print(json.dumps(tasks_to_list, indent=2))
-                    print(f"{bcolors.BOLD}\
-                          Task No.: {task_id + 1} listed\
-                            {bcolors.ENDC}")
+
+                # LIST THE TASK BY ITS INDEX
+                tasks_to_list.append(self.stored_tasks[position])
+                print(json.dumps(tasks_to_list, indent=2))
+                print(f"{bcolors.BOLD}\
+                        Task No.: {task_id} listed\
+                        {bcolors.ENDC}")
             else:
                 for task in self.stored_tasks:
                     if task["status"] == input[1]:
