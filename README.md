@@ -1,4 +1,4 @@
-# **Task Manager CLI**
+# **Task Tracker CLI**
 
 A Python-based **Command-Line Interface (CLI)** application for managing tasks efficiently. This tool allows users to create, update, list, delete, and manage the status of their tasks with ease.  
 
