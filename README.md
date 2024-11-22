@@ -1,7 +1,9 @@
 # **Task Tracker CLI**
 
-A Python-based **Command-Line Interface (CLI)** application for managing tasks efficiently. This tool allows users to create, update, list, delete, and manage the status of their tasks with ease.  
+A Python-based **Command-Line Interface (CLI)** application for managing tasks efficiently. This tool allows users to create, update, list, delete, and manage the status of their tasks with ease.
 
+
+This project is inspired by [Roadmap.sh](https://roadmap.sh/projects/task-tracker).
 
 ## **Features**
 
@@ -30,19 +32,13 @@ A Python-based **Command-Line Interface (CLI)** application for managing tasks e
    ```bash
    pip install -r requirements.txt
    ```
-   *(No dependencies for now, but include this for future-proofing.)*
-
-3. Ensure a `storage.json` file exists in the project directory:
-   ```bash
-   echo "[]" > storage.json
-   ```
 
 
 ## **Usage**
 
 To start the Task Manager CLI, simply run:
 ```bash
-python task_manager.py
+python console.py
 ```
 
 ### **Commands**
