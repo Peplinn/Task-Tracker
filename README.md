@@ -81,7 +81,7 @@ Task updated successfully (ID: 1)
     "updatedAt": "11/21/24, 12:30"
   }
 ]
-1 tasks listed
+1 task listed
 ```
 
 
